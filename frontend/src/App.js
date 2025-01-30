@@ -5,28 +5,26 @@ import './App.css';
 const App = () => {
   const [file, setFile] = useState(null);
   const [keywords, setKeywords] = useState([]);
-  const [error, setError] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [chatMessage, setChatMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleFileChange = (event) => {
-    setFile(event.target.files[0]);
-    setError('');
-    setKeywords([]);
+  // Handle file upload
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
   const handleUpload = async () => {
     if (!file) {
-      setError('Please select a PDF file first.');
+      alert('Please select a file first!');
       return;
     }
 
     const formData = new FormData();
     formData.append('resume', file);
 
-    setLoading(true);
-    setError('');
-
     try {
+      setLoading(true);
       const response = await axios.post(
         'http://localhost:5000/upload-resume',
         formData,
@@ -35,31 +33,91 @@ const App = () => {
         }
       );
       setKeywords(response.data.keywords);
-    } catch (err) {
-      setError('Failed to process the resume. Please try again.');
+      setChatHistory([]); // Clear chat history on new upload
+      alert('Resume uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Error uploading file.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle chat submission
+  const sendMessage = async () => {
+    if (!chatMessage) return;
+
+    const newChatHistory = [
+      ...chatHistory,
+      { role: 'user', content: chatMessage },
+    ];
+
+    setChatHistory(newChatHistory); // Update UI immediately
+
+    try {
+      const response = await axios.post('http://localhost:5000/chat', {
+        message: chatMessage,
+        resumeKeywords: keywords,
+      });
+      const botMessage = { role: 'assistant', content: response.data.response };
+      setChatHistory([...newChatHistory, botMessage]);
+      setChatMessage(''); // Clear input field
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Error in chat communication.');
+    }
+
+    setChatMessage(''); // Clear input field
+  };
+
   return (
     <div className='container'>
-      <h1>Resume Keyword Extractor</h1>
-      <input type='file' accept='application/pdf' onChange={handleFileChange} />
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? 'Processing...' : 'Upload & Extract Keywords'}
-      </button>
-      {error && <p className='error'>{error}</p>}
+      <h1>AI Technical Interview</h1>
+
+      {/* Resume Upload Section */}
+      <div className='resume-upload'>
+        <input
+          type='file'
+          accept='application/pdf'
+          onChange={handleFileChange}
+        />
+        <button onClick={handleUpload} disabled={loading}>
+          {loading ? 'Uploading...' : 'Upload Resume'}
+        </button>
+      </div>
+
+      {/* Display Extracted Keywords */}
       {keywords.length > 0 && (
         <div className='keywords'>
-          <h2>Extracted Keywords:</h2>
-          <ul>
-            {keywords.map((word, index) => (
-              <li key={index}>{word}</li>
-            ))}
-          </ul>
+          <h3>Extracted Keywords:</h3>
+          <p>{keywords.join(', ')}</p>
         </div>
       )}
+
+      {/* Chat Section */}
+      <div className='chat-container'>
+        <div className='chat-box'>
+          {chatHistory.map((msg, index) => (
+            <div
+              key={index}
+              className={msg.role === 'user' ? 'user-msg' : 'bot-msg'}
+            >
+              <strong>{msg.role === 'user' ? 'You' : 'AI'}:</strong>{' '}
+              {msg.content}
+            </div>
+          ))}
+        </div>
+
+        <div className='chat-input'>
+          <input
+            type='text'
+            value={chatMessage}
+            onChange={(e) => setChatMessage(e.target.value)}
+            placeholder='Type your message...'
+          />
+          <button onClick={sendMessage}>Send</button>
+        </div>
+      </div>
     </div>
   );
 };

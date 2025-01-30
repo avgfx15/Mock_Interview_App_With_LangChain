@@ -1,0 +1,13 @@
+we want to make backend api, where user from our frontend can interact in the form of chat, we are aiming to build a custom technical interview model, to which we can feed a custom prompt around how to take interview (I have this prompt with me), you need to build support of this on the backend and frontend, make sure that when user is chatting the whole chat is kept into the context, when answering the next set of question. This is because it is an interview model, so context of all previous question and answers are important
+
+also add support for frontend and make nice UI, also make sure the code  should be working, also make comment where needed
+
+
+
+we want to make backend api, where user from our frontend can interact in the form of chat, we are aiming to build a custom technical interview model, to which we can feed a custom prompt around how to take interview (I have this prompt with me), you need to build support of this on the backend and frontend, make sure that when user is chatting the whole chat is kept into the context, when answering the next set of question. This is because it is an interview model, so context of all previous question and answers are important
+
+also add support for frontend and make nice UI, also make sure the code  should be working, also make comment where needed
+
+Make sure you continue with same build node backend where user upload resume, why ? Because while asking questions to the candidate we have to keep the resume keywords in mind and the prompt  will also be dependent on these keywords
+
+For frontend also you should continue with same one

@@ -5,12 +5,29 @@ const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const fs = require('fs');
 
+const session = require('express-session');
+const { ChatOpenAI } = require('@langchain/openai');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+
+// app.use(
+//   session({
+//     secret: 'your_secret_key',
+//     resave: false,
+//     saveUninitialized: true,
+//     cookie: { secure: false }, // Set secure: true in production with HTTPS
+//   })
+// );
+
+// Initialize OpenAI Chat Model
+const chatModel = new ChatOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Ping route
 app.get('/ping', (req, res) => {
@@ -57,6 +74,33 @@ const extraKeywords = (text) => {
   );
   return sortedKeywords.slice(0, 50);
 };
+
+let chatContext = [];
+// Chat API with Context
+app.post('/chat', async (req, res) => {
+  try {
+    const { message, resumeKeywords } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message is required' });
+    chatContext.push({ role: 'user', content: message });
+
+    const systemMessage = {
+      role: 'system',
+      content: `You are technical interviewer. Consider the following resume keywords while asking questions : ${resumeKeywords.join(
+        ', '
+      )}.keep all previous questions and answers in context.`,
+    };
+
+    const contextWithSystemMessage = [systemMessage, ...chatContext];
+
+    const response = await chatModel.invoke(contextWithSystemMessage);
+    chatContext.push({ role: 'assistant', content: response.content });
+
+    res.json({ response: response.content });
+  } catch (error) {
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // $ Method 2
 
