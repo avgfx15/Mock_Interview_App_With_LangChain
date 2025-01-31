@@ -7,6 +7,7 @@ const fs = require('fs');
 
 const session = require('express-session');
 const { ChatOpenAI } = require('@langchain/openai');
+const  getPrompts  = require('./prompts');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -85,7 +86,7 @@ app.post('/chat', async (req, res) => {
 
     const systemMessage = {
       role: 'system',
-      content: `You are technical interviewer. Consider the following resume keywords while asking questions : ${resumeKeywords.join(
+      content: `${getPrompts()} ${resumeKeywords.join(
         ', '
       )}.keep all previous questions and answers in context.`,
     };

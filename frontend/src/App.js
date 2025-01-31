@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
+import ReactMarkdown from 'react-markdown';
+
 const App = () => {
   const [file, setFile] = useState(null);
   const [keywords, setKeywords] = useState([]);
@@ -103,7 +105,7 @@ const App = () => {
               className={msg.role === 'user' ? 'user-msg' : 'bot-msg'}
             >
               <strong>{msg.role === 'user' ? 'You' : 'AI'}:</strong>{' '}
-              {msg.content}
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
           ))}
         </div>
