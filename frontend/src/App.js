@@ -4,6 +4,10 @@ import './App.css';
 
 import ReactMarkdown from 'react-markdown';
 
+const BASE_API =
+  'https://mock-interview-app-with-langchain-backend.onrender.com' ||
+  'http://localhost:5000';
+
 const App = () => {
   const [file, setFile] = useState(null);
   const [keywords, setKeywords] = useState([]);
@@ -27,13 +31,9 @@ const App = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        'http://localhost:5000/upload-resume',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        }
-      );
+      const response = await axios.post(`${BASE_API}/upload-resume`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       setKeywords(response.data.keywords);
       setChatHistory([]); // Clear chat history on new upload
       alert('Resume uploaded successfully!');
@@ -57,7 +57,7 @@ const App = () => {
     setChatHistory(newChatHistory); // Update UI immediately
 
     try {
-      const response = await axios.post('http://localhost:5000/chat', {
+      const response = await axios.post(`${BASE_API}/chat`, {
         message: chatMessage,
         resumeKeywords: keywords,
       });
